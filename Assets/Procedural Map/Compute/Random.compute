@@ -1,0 +1,17 @@
+﻿struct RndGenerator
+{ 
+	float2 w;
+	float m;
+
+	float2 offset;
+};
+
+StructuredBuffer<RndGenerator> rndGenerator;
+
+float fsdRnd(float2 v, uint i) {
+	return frac(sin(dot(v, rndGenerator[i].w)) * rndGenerator[i].m);
+}
+
+float rand(float2 x, uint i) {
+	return fsdRnd(x + rndGenerator[i].offset, i);
+}

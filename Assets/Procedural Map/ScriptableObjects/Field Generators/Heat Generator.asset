@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 641d8b3d4926dea45bd932452c5543a2, type: 3}
+  m_Name: Heat Generator
+  m_EditorClassIdentifier: 
+  compute: {fileID: 7200000, guid: d4617099da39054449ec798aa3cff168, type: 3}
+  gradientGenerator: {fileID: 11400000, guid: 93f409fd4c0d9be47ba376b7d45bd372, type: 2}
+  scale: 0.08612
+  offset:
+  - {x: 10.91, y: 20.51}
+  - {x: 1.3, y: 13.5}
+  - {x: 9.3, y: 2.8}
+  - {x: 5.1, y: 4.7}
+  octaves: 4
+  lacunarity: 5
+  persistance: 0.9

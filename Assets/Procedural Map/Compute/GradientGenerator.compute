@@ -1,0 +1,21 @@
+﻿#pragma kernel CSGenerateGradient
+#include "Random.compute"
+
+RWStructuredBuffer<float2> gradient;
+
+uint size;
+float scale;
+
+int index(int x, int y) {
+	return x * size + y;
+}
+
+[numthreads(8,8,1)]
+void CSGenerateGradient(uint3 id : SV_DispatchThreadID)
+{
+	if (id.x >= size || id.y >= size)
+		return;
+
+	int i = index(id.x, id.y);
+	gradient[i] = normalize(float2(rand(float2(id.xy) * scale, 0) * 2 - 1, rand(float2(id.yx) * scale, 1) * 2 - 1));
+}

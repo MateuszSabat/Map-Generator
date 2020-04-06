@@ -1,0 +1,22 @@
+﻿#pragma kernel CSEditHeat
+
+RWStructuredBuffer<float> heat;
+uint size;
+
+[numthreads(8,8,1)]
+void CSEditHeat (uint3 id : SV_DispatchThreadID)
+{
+	if (id.x >= size || id.y >= size)
+		return;
+
+	int i = id.x * size + id.y;
+	float c = (float)size * 0.5f;
+	float dx = (float)id.x - c;
+	float dy = (float)id.y - c;
+	float r = (dx * dx + dy * dy) / (c * c);
+
+	float h = heat[i] * 0.3f + 1.0f - r;
+	if (h < 0)
+		h = 0;
+	heat[i] = h;
+}
