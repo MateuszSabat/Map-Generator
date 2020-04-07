@@ -1,0 +1,70 @@
+﻿#pragma kernel CSBiomeCompute
+
+RWBuffer<float4> color;
+Buffer<float> height;
+Buffer<float> normal;
+Buffer<float> heat;
+Buffer<float> humidity;
+
+uint size;
+
+Buffer<float> heightLevel;
+Buffer<float> heatLevel;
+Buffer<float> humidityLevel;
+uint heightLevelCount;
+uint heatLevelCount;
+uint humidityLevelCount;
+
+Texture2D<float4> landSample;
+Texture2D<float4> waterSample;
+
+float4 lColor(uint x, uint y) {
+	float3 c = landSample[uint2(x, y).xy].xyz;
+	return float4(c.x, c.y, c.z, 1.0f);
+}
+float4 wColor(uint x) {
+	float3 c = waterSample[uint2(x, 0).xy].xyz;
+	return float4(c.x, c.y, c.z, 1.0f);
+}
+
+uint getHeatLevel(float heat)
+{
+	for (uint j = 0; j < heatLevelCount; j++) {
+		if (heat < heatLevel[j]) {
+			return j;
+		}
+	}
+	return heatLevelCount;
+}
+uint getHumidityLevel(float humidity)
+{
+	for (uint j = 0; j < humidityLevelCount; j++) {
+		if (humidity < humidityLevel[j]) {
+			return j;
+		}
+	}
+	return humidityLevelCount;
+}
+
+[numthreads(8,8,1)]
+void CSBiomeCompute(uint3 id : SV_DispatchThreadID)
+{
+	if (id.x >= size || id.y >= size)
+		return;
+
+	uint i = id.x * size + id.y;
+
+	if (heat[i] < heatLevel[0]) {
+		color[i] = lColor(0, 0);
+		return;
+	}
+	
+	for (uint j = 0; j < heightLevelCount; j++) {
+		if (height[i] < heightLevel[j]) {
+			color[i] = wColor(j);
+			return;
+		}
+	}
+
+	color[i] = lColor(getHeatLevel(heat[i]), getHumidityLevel(humidity[i]));
+}

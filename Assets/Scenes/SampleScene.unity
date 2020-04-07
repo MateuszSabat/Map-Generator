@@ -150,87 +150,30 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 930d01072dc0b854598cde77e1b090c3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  size: 8192
+  size: 4096
   heightGenerator: {fileID: 11400000, guid: ec4eb7dc70c03c64da86237648755389, type: 2}
   heatGenerator: {fileID: 11400000, guid: fec5a3e6738039746be16d02218aefd0, type: 2}
   humidityGenerator: {fileID: 11400000, guid: c236bfd9243c22447a8030f4a6d73652, type: 2}
   heightCompute: {fileID: 7200000, guid: 35ef62057aaeb4e4e81e548d120f8455, type: 3}
-  slopeCompute: {fileID: 7200000, guid: cd26b9dcdc118e443b7be9b28cc93932, type: 3}
+  normalCompute: {fileID: 7200000, guid: f4c23a4c243edcd4fae777568c5a5827, type: 3}
   heatCompute: {fileID: 7200000, guid: 2707e5f348fcd9d44b61eafac711636b, type: 3}
   humidityCompute: {fileID: 7200000, guid: 80ff724a3fcace947bc46b62d2fbe9b7, type: 3}
-  heightCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0.0016174316
-      value: -0.076293945
-      inSlope: 0.0023552969
-      outSlope: 0.0023552969
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 1
-    - serializedVersion: 3
-      time: 0.33298552
-      value: 0.019554032
-      inSlope: 0.83963925
-      outSlope: 0.83963925
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.3205318
-    - serializedVersion: 3
-      time: 0.57563967
-      value: 0.2975726
-      inSlope: 0.51562333
-      outSlope: 0.51562333
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.8735
-      outWeight: 0.19041778
-    - serializedVersion: 3
-      time: 1.0125933
-      value: 2.499967
-      inSlope: 12.210399
-      outSlope: 12.210399
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.42118776
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  deepWaterLevel: 0.2
-  waterLevel: 0.28
-  shallowWaterLevel: 0.31
-  sandLevel: 0.32
-  rockLevel: 0.4
-  hardRockLevel: 0.43
-  highSnowLevel: 0.48
-  iceLevel: 0.25
-  tundraLevel: 0.4
-  scrubLevel: 0.6
-  forestLevel: 0.8
-  dessertLevel: 0.25
-  dryLevel: 0.5
-  wetLevel: 0.75
-  deepWater: {r: 0, g: 0.064, b: 0.702, a: 1}
-  water: {r: 0, g: 0.213, b: 1, a: 1}
-  shallowWater: {r: 0.071, g: 0.688, b: 0.965, a: 1}
-  snowDessertColor: {r: 0.8021093, g: 0.9129943, b: 0.9716981, a: 1}
-  dryTundra: {r: 0.617, g: 0.213, b: 0, a: 1}
-  tundra: {r: 0.624, g: 0.383, b: 0, a: 1}
-  rainTundra: {r: 0, g: 0.333, b: 0, a: 1}
-  dessert: {r: 0.794, g: 0.348, b: 0, a: 1}
-  dryScrub: {r: 0.61, g: 0.617, b: 0, a: 1}
-  scrub: {r: 0.475, g: 0.567, b: 0, a: 1}
-  forestConifer: {r: 0.31999823, g: 0.4811321, b: 0.31999823, a: 1}
-  rainForest: {r: 0, g: 0.702, b: 0.113, a: 1}
-  steppe: {r: 0.454, g: 0.291, b: 0.34, a: 1}
-  forestLeaves: {r: 0, g: 0.582, b: 0, a: 1}
-  dessertHot: {r: 1, g: 0.092, b: 0.21226418, a: 1}
-  woodland: {r: 0.9622642, g: 0.7679668, b: 0.32226774, a: 1}
-  rainForestHpt: {r: 0.13105197, g: 0.8962264, b: 0.13105197, a: 1}
+  biomesCompute: {fileID: 7200000, guid: 151131db15e35194db3e52d463b50138, type: 3}
+  heightLevel:
+  - 0.18
+  - 0.28
+  - 0.3
+  - 0.31
+  heatLevel:
+  - 0.25
+  - 0.6
+  - 0.8
+  humidityLevel:
+  - 0.2
+  - 0.3
+  - 0.5
+  biomesSample: {fileID: 2800000, guid: f48181d8453002a41abd3901ecab8e76, type: 3}
+  waterSample: {fileID: 2800000, guid: 7afa5d4887ad3f8418fcebab2a4ce402, type: 3}
 --- !u!4 &12730087
 Transform:
   m_ObjectHideFlags: 0

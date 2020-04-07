@@ -1,0 +1,44 @@
+﻿#pragma kernel CSEditNormal
+
+RWBuffer<float3> normal;
+Buffer<float> h;
+
+uint size;
+
+[numthreads(8,8,1)]
+void CSEditNormal(uint3 id : SV_DispatchThreadID)
+{
+	if (id.x >= size || id.y >= size)
+		return;
+
+	int i = id.x * size + id.y;
+
+	float3 n = float3(0, 0, 0);
+
+	if (id.x != 0) {
+		if (id.y != 0) {
+			float3 a = float3 (-1, h[i - size] - h[i - 1], 1);
+			float3 b = float3(-1, h[i - size - 1] - h[i], -1);
+			n += cross(a, b);
+		}
+		if (id.y != size - 1) {
+			float3 a = float3(0, h[i + 1] - h[i], 1);
+			float3 b = float3(-1, h[i - size] - h[i], 0);
+			n += cross(a, b);
+		}
+	}
+	if (id.x != size - 1) {
+		if (id.y != 0) {
+			float3 a = float3(0, h[i - 1] - h[i], -1);
+			float3 b = float3(1, h[i + size] - h[i], 0);
+			n += cross(a, b);
+		}
+		if (id.y != size - 1) {
+			float3 a = float3(1, h[i + size] - h[i + 1], -1);
+			float3 b = float3(1, h[i + size + 1] - h[i], 1);
+			n += cross(a, b);
+		}
+	}
+
+	normal[i] = normalize(n);
+}

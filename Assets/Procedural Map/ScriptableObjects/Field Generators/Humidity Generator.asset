@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   compute: {fileID: 7200000, guid: d4617099da39054449ec798aa3cff168, type: 3}
   gradientGenerator: {fileID: 11400000, guid: 45add18cc53c26a439ae9bfb414660d6, type: 2}
-  scale: 0.0036138
+  scale: 0.010163572
   offset:
   - {x: 1.5, y: 3.4}
   - {x: 13.3, y: 4.2}
@@ -22,5 +22,5 @@ MonoBehaviour:
   - {x: 12.5, y: 45.2}
   - {x: 10.47, y: 31.53}
   octaves: 5
-  lacunarity: 5
-  persistance: 1.3
+  lacunarity: 4
+  persistance: 0.9

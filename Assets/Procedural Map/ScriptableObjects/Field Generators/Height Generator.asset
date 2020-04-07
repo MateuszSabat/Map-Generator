@@ -14,9 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   compute: {fileID: 7200000, guid: d4617099da39054449ec798aa3cff168, type: 3}
   gradientGenerator: {fileID: 11400000, guid: f4d76c7d6b132f642bc6520cb1a9e76f, type: 2}
-  scale: 0.036315
+  scale: 0.07263
   offset:
-  - {x: 13.613, y: 13.1357}
+  - {x: 25.134, y: 13.1357}
   - {x: 10.1357, y: 9.134764}
   - {x: 5.1234, y: 10.511}
   - {x: 5.1234, y: 10.511}

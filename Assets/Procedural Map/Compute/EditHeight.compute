@@ -1,6 +1,6 @@
 ﻿#pragma kernel CSEditHeight
 
-RWStructuredBuffer<float> height;
+RWBuffer<float> height;
 uint size;
 
 float waterLevel;

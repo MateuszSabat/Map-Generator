@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
 
 namespace ProceduralMap
@@ -16,123 +15,25 @@ namespace ProceduralMap
 
         [Space(5f)]
         public ComputeShader heightCompute;
-        public ComputeShader slopeCompute;
+        public ComputeShader normalCompute;
         public ComputeShader heatCompute;
         public ComputeShader humidityCompute;
+        public ComputeShader biomesCompute;
 
         [Space(5f)]
-        public AnimationCurve heightCurve;
+        public float[] heightLevel;
+        public float[] heatLevel;
+        public float[] humidityLevel;
 
-        [Space(5f)]
-        public float deepWaterLevel;
-        public float waterLevel;
-        public float shallowWaterLevel;
-        public float sandLevel;
-        public float rockLevel;
-        public float hardRockLevel;
-        public float highSnowLevel;
+        public Texture2D biomesSample;
+        public Texture2D waterSample;
 
-        [Space(5f)]
-        public float iceLevel;
-        public float tundraLevel;
-        public float scrubLevel;
-        public float forestLevel;
-
-        [Space(5f)]
-        public float dessertLevel;
-        public float dryLevel;
-        public float wetLevel;
-
-        public Color deepWater;
-        public Color water;
-        public Color shallowWater;
-        public Color snowDessertColor;
-        public Color dryTundra;
-        public Color tundra;
-        public Color rainTundra;
-        public Color dessert;
-        public Color dryScrub;
-        public Color scrub;
-        public Color forestConifer;
-        public Color rainForest;
-        public Color steppe;
-        public Color forestLeaves;
-        public Color dessertHot;
-        public Color woodland;
-        public Color rainForestHpt;
-
-
-        public Color GetColor(float height, float heat, float humidity, float slope)
-        {
-
-            if (heat < iceLevel)
-                return snowDessertColor;
-
-            if (height < deepWaterLevel)
-                return deepWater;
-
-            if (height < waterLevel)
-                return water;
-
-            if (height < shallowWaterLevel)
-                return shallowWater;
-
-            if (height < sandLevel)
-                return Color.yellow;
-            if (height > highSnowLevel)
-                return new Color(0.95f, 0.95f, 0.95f, 1);
-            if (height > hardRockLevel)
-                return new Color(0.4f, 0.4f, 0.4f, 1);
-            if (height > rockLevel)
-                return new Color(0.5f, 0.5f, 0.5f, 1);
-
-            if(heat < tundraLevel)
-            {
-                if (humidity < dessertLevel)
-                    return dryTundra;
-                if (humidity < wetLevel)
-                    return tundra;
-
-                return rainTundra;
-            }
-
-            if(humidity < dessertLevel)
-            {
-                if (heat < forestLevel)
-                    return dessert;
-                return dessertHot;
-            }
-
-            if(heat < scrubLevel)
-            {
-                if (humidity < dryLevel)
-                    return dryScrub;
-                if (humidity < wetLevel)
-                    return scrub;
-                return forestConifer;
-            }
-
-            if(heat < forestLevel)
-            {
-                if (humidity < dryLevel)
-                    return steppe;
-                if (humidity < wetLevel)
-                    return forestLeaves;
-                return rainForest;
-            }
-
-            if (humidity < dryLevel)
-                return woodland;
-
-            return rainForest;
-
-        }
 
         public void GenerateMap()
         {
 
             float[] height = new float[size * size];
-            float[] slope = new float[size * size];
+            float[] normal = new float[size * size];
             float[] heat = new float[size * size];
             float[] humidity = new float[size * size];
 
@@ -148,16 +49,16 @@ namespace ProceduralMap
 
             heightBuffer.GetData(height);
             #endregion            
-            #region slope
-            ComputeBuffer slopeBuffer = new ComputeBuffer(size * size, 4);
+            #region normal
+            ComputeBuffer normalBuffer = new ComputeBuffer(size * size, 4);
 
-            slopeCompute.SetBuffer(0, "slope", slopeBuffer);
-            slopeCompute.SetBuffer(0, "height", heightBuffer);
-            slopeCompute.SetInt("size", size);
+            normalCompute.SetBuffer(0, "normal", normalBuffer);
+            normalCompute.SetBuffer(0, "h", heightBuffer);
+            normalCompute.SetInt("size", size);
 
-            slopeCompute.Dispatch(0, threadGroup, threadGroup, 1);
+            normalCompute.Dispatch(0, threadGroup, threadGroup, 1);
 
-            slopeBuffer.GetData(slope);
+            normalBuffer.GetData(normal);
             #endregion            
             #region heat
             ComputeBuffer heatBuffer = heatGenerator.GenerateComputeBuffer(size);
@@ -184,22 +85,55 @@ namespace ProceduralMap
 
             Texture2D map = new Texture2D(size, size);
 
-            Color[] cs = new Color[size * size];
-            for (int i = 0; i < cs.Length; i++) {
-                cs[i] = GetColor(height[i], heat[i], humidity[i], slope[i]);
-            }
+            ComputeBuffer colorBuffer = new ComputeBuffer(size * size, 16);
 
-            map.SetPixels(cs);
+            ComputeBuffer heightLevelBuffer = new ComputeBuffer(heightLevel.Length, 4);
+            ComputeBuffer heatLevelBuffer = new ComputeBuffer(heatLevel.Length, 4);
+            ComputeBuffer humidityLevelBuffer = new ComputeBuffer(humidityLevel.Length, 4);
+
+            heightLevelBuffer.SetData(heightLevel);
+            heatLevelBuffer.SetData(heatLevel);
+            humidityLevelBuffer.SetData(humidityLevel);
+
+            biomesCompute.SetBuffer(0, "color", colorBuffer);
+            biomesCompute.SetBuffer(0, "height", heightBuffer);
+            biomesCompute.SetBuffer(0, "normal", normalBuffer);
+            biomesCompute.SetBuffer(0, "heat", heatBuffer);
+            biomesCompute.SetBuffer(0, "humidity", humidityBuffer);
+            biomesCompute.SetInt("size", size);
+            biomesCompute.SetBuffer(0, "heightLevel", heightLevelBuffer);
+            biomesCompute.SetBuffer(0, "heatLevel", heatLevelBuffer);
+            biomesCompute.SetBuffer(0, "humidityLevel", humidityLevelBuffer);
+            biomesCompute.SetInt("heightLevelCount", heightLevel.Length);
+            biomesCompute.SetInt("heatLevelCount", heatLevel.Length);
+            biomesCompute.SetInt("humidityLevelCount", humidityLevel.Length);
+            biomesCompute.SetTexture(0, "landSample", biomesSample);
+            biomesCompute.SetTexture(0, "waterSample", waterSample);
+
+            biomesCompute.Dispatch(0, threadGroup, threadGroup, 1);
+
+            Color[] colors = new Color[size * size];
+
+            colorBuffer.GetData(colors);
+
+            map.SetPixels(colors);
             map.filterMode = FilterMode.Point;
             map.wrapMode = TextureWrapMode.Clamp;
 
             map.Apply();
 
-            File.WriteAllBytes(Application.dataPath + "/Procedural Map/Maps/map.png", map.EncodeToPNG());
+            File.WriteAllBytes(Application.dataPath + "/Procedural Map/Data/Maps/map.png", map.EncodeToPNG());
 
             heightBuffer.Release();
-            slopeBuffer.Release();
+            normalBuffer.Release();
             heatBuffer.Release();
+            humidityBuffer.Release();
+
+            heightLevelBuffer.Release();
+            heatLevelBuffer.Release();
+            humidityLevelBuffer.Release();
+
+            colorBuffer.Release();
         }
     }
 }
