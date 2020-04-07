@@ -14,6 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gradientGeneratorCompute: {fileID: 7200000, guid: ea10111723a18444b95ac512d6c83e23,
     type: 3}
-  seed: 8712
+  seed: 0
   size: 16
   scale: 1.42672

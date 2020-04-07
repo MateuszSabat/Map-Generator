@@ -1,0 +1,24 @@
+﻿#pragma kernel CSEditHeight
+
+RWStructuredBuffer<float> height;
+uint size;
+
+float waterLevel;
+
+float aw, bw;
+float al, bl, cl;
+
+float h(float x) {
+	return x * x;
+}
+
+[numthreads(8,8,1)]
+void CSEditHeight(uint3 id : SV_DispatchThreadID)
+{
+	if (id.x >= size || id.y >= size)
+		return;
+
+	int i = id.x * size + id.y;
+
+	height[i] = h(height[i]);
+}

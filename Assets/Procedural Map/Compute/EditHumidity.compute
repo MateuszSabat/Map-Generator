@@ -1,0 +1,17 @@
+﻿#pragma kernel CSEditHumidity
+
+RWStructuredBuffer<float> humidity;
+RWStructuredBuffer<float> height;
+uint size;
+
+[numthreads(8,8,1)]
+void CSEditHumidity(uint3 id : SV_DispatchThreadID)
+{
+	if (id.x >= size || id.y >= size)
+		return;
+
+	int i = id.x * size + id.y;
+
+	humidity[i] -= height[i] * 0.1f;
+
+}
