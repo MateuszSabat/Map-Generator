@@ -1,4 +1,4 @@
-﻿#pragma kernel CSBiomeCompute
+﻿#pragma kernel CSLandTexCompute
 
 RWBuffer<float4> color;
 Buffer<float> height;
@@ -17,6 +17,8 @@ uint humidityLevelCount;
 
 Texture2D<float4> landSample;
 Texture2D<float4> waterSample;
+
+float4 lightDir;
 
 float4 lColor(uint x, uint y) {
 	float3 c = landSample[uint2(x, y).xy].xyz;
@@ -46,8 +48,8 @@ uint getHumidityLevel(float humidity)
 	return humidityLevelCount;
 }
 
-[numthreads(8,8,1)]
-void CSBiomeCompute(uint3 id : SV_DispatchThreadID)
+[numthreads(8, 8, 1)]
+void CSLandTexCompute(uint3 id : SV_DispatchThreadID)
 {
 	if (id.x >= size || id.y >= size)
 		return;
@@ -60,15 +62,7 @@ void CSBiomeCompute(uint3 id : SV_DispatchThreadID)
 		color[i] = lColor(0, 0);
 		return;
 	}
-	
-	//water
-	for (uint j = 0; j < heightLevelCount - 1; j++) {
-		if (height[i] < heightLevel[j]) {
-			color[i] = wColor(j);
-			return;
-		}
-	}
-	
+
 	//rocks
 	//may be deleted
 	float cos = normal[i].y; // dot(normal[i], float3(0, 1, 0))
@@ -77,7 +71,7 @@ void CSBiomeCompute(uint3 id : SV_DispatchThreadID)
 		color[i] = float4(0.5f, 0.5f, 0.5f, 1.0f);
 		return;
 	}
-	
+
 	//sand
 	if (height[i] < heightLevel[heightLevelCount - 1]) {
 		color[i] = wColor(heightLevelCount - 1);

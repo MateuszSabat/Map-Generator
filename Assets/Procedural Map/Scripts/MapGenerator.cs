@@ -14,11 +14,14 @@ namespace ProceduralMap
         public FieldGenerator humidityGenerator;
 
         [Space(5f)]
+        public float vertexDistanceToCalculateNormals;
+        [Space(5f)]
         public ComputeShader heightCompute;
         public ComputeShader normalCompute;
         public ComputeShader heatCompute;
         public ComputeShader humidityCompute;
         public ComputeShader biomesCompute;
+        public ComputeShader landTexCompute;
 
         [Space(5f)]
         public float[] heightLevel;
@@ -28,14 +31,10 @@ namespace ProceduralMap
         public Texture2D biomesSample;
         public Texture2D waterSample;
 
-
-        public void GenerateMap()
+        public Vector4 lightDir;
+        public MapData GenerateMap()
         {
-
-            float[] height = new float[size * size];
-            float[] normal = new float[size * size];
-            float[] heat = new float[size * size];
-            float[] humidity = new float[size * size];
+            MapData data = new MapData(size);
 
             int threadGroup = Mathf.CeilToInt(size / 8f);
 
@@ -47,19 +46,20 @@ namespace ProceduralMap
 
             heightCompute.Dispatch(0, threadGroup, threadGroup, 1);
 
-            heightBuffer.GetData(height);
+            heightBuffer.GetData(data.height);
             #endregion            
             #region normal
-            ComputeBuffer normalBuffer = new ComputeBuffer(size * size, 4);
+            ComputeBuffer normalBuffer = new ComputeBuffer(size * size, 12);
 
             normalCompute.SetBuffer(0, "normal", normalBuffer);
-            normalCompute.SetBuffer(0, "h", heightBuffer);
+            normalCompute.SetBuffer(0, "height", heightBuffer);
             normalCompute.SetInt("size", size);
+            normalCompute.SetFloat("vertexDistance", vertexDistanceToCalculateNormals);
 
             normalCompute.Dispatch(0, threadGroup, threadGroup, 1);
 
-            normalBuffer.GetData(normal);
-            #endregion            
+            normalBuffer.GetData(data.normal);
+            #endregion
             #region heat
             ComputeBuffer heatBuffer = heatGenerator.GenerateComputeBuffer(size);
            
@@ -69,7 +69,7 @@ namespace ProceduralMap
 
             heatCompute.Dispatch(0, threadGroup, threadGroup, 1);
             
-            heatBuffer.GetData(heat);
+            heatBuffer.GetData(data.heat);
             #endregion
             #region humidity
             ComputeBuffer humidityBuffer = humidityGenerator.GenerateComputeBuffer(size);
@@ -80,7 +80,7 @@ namespace ProceduralMap
 
             humidityCompute.Dispatch(0, threadGroup, threadGroup, 1);
 
-            humidityBuffer.GetData(humidity);
+            humidityBuffer.GetData(data.humidity);
             #endregion
 
             Texture2D map = new Texture2D(size, size);
@@ -94,6 +94,7 @@ namespace ProceduralMap
             heightLevelBuffer.SetData(heightLevel);
             heatLevelBuffer.SetData(heatLevel);
             humidityLevelBuffer.SetData(humidityLevel);
+
 
             biomesCompute.SetBuffer(0, "color", colorBuffer);
             biomesCompute.SetBuffer(0, "height", heightBuffer);
@@ -124,6 +125,34 @@ namespace ProceduralMap
 
             File.WriteAllBytes(Application.dataPath + "/Procedural Map/Data/Maps/map.png", map.EncodeToPNG());
 
+
+            landTexCompute.SetBuffer(0, "color", colorBuffer);
+            landTexCompute.SetBuffer(0, "height", heightBuffer);
+            landTexCompute.SetBuffer(0, "normal", normalBuffer);
+            landTexCompute.SetBuffer(0, "heat", heatBuffer);
+            landTexCompute.SetBuffer(0, "humidity", humidityBuffer);
+            landTexCompute.SetInt("size", size);
+            landTexCompute.SetBuffer(0, "heightLevel", heightLevelBuffer);
+            landTexCompute.SetBuffer(0, "heatLevel", heatLevelBuffer);
+            landTexCompute.SetBuffer(0, "humidityLevel", humidityLevelBuffer);
+            landTexCompute.SetInt("heightLevelCount", heightLevel.Length);
+            landTexCompute.SetInt("heatLevelCount", heatLevel.Length);
+            landTexCompute.SetInt("humidityLevelCount", humidityLevel.Length);
+            landTexCompute.SetTexture(0, "landSample", biomesSample);
+            landTexCompute.SetTexture(0, "waterSample", waterSample);
+
+            landTexCompute.Dispatch(0, threadGroup, threadGroup, 1);
+
+            colorBuffer.GetData(colors);
+
+            map.SetPixels(colors);
+            map.filterMode = FilterMode.Point;
+            map.wrapMode = TextureWrapMode.Clamp;
+
+            map.Apply();
+
+            data.map = map;
+
             heightBuffer.Release();
             normalBuffer.Release();
             heatBuffer.Release();
@@ -134,6 +163,75 @@ namespace ProceduralMap
             humidityLevelBuffer.Release();
 
             colorBuffer.Release();
+
+            return data;
+        }
+
+        
+    }
+
+    public class MapData
+    {
+        public int size;
+        public Texture2D map;
+        public float[] height;
+        public float[] heat;
+        public float[] humidity;
+        public Vector3[] normal;
+
+        public MapData(int _size)
+        {
+            size = _size;
+            map = new Texture2D(size, size);
+            height = new float[size * size];
+            heat = new float[size * size];
+            humidity = new float[size * size];
+            normal = new Vector3[size * size];
+        }
+
+
+        public Mesh GetMesh(int sX, int sY, int d, float scale, float heightMultiplier)
+        {
+            int dx = Mathf.Min(d + 1, size - sX);
+            int dy = Mathf.Min(d + 1, size - sY);
+            Vector3[] vertices = new Vector3[dx * dy];
+            Vector2[] uvs = new Vector2[dx * dy];
+            int[] triangles = new int[(dx - 1) * (dy - 1) * 6];
+
+            int vIndex = 0, tIndex = 0;
+
+            float uvMultiplier = 1.0f / size;
+
+            for (int x = 0; x < dx; x++)
+                for (int y = 0; y < dy; y++)
+                {
+                    vertices[vIndex] = new Vector3(x * scale, height[(sY + y) * size + sX + x] * heightMultiplier * scale, y * scale);
+                    uvs[vIndex] = new Vector2((sX + x) * uvMultiplier, (sY + y) * uvMultiplier);
+                    if (x != dx - 1 && y != dy - 1)
+                    {
+                        triangles[tIndex] = vIndex;
+                        triangles[tIndex + 1] = vIndex + 1;
+                        triangles[tIndex + 2] = vIndex + dy + 1;
+
+                        triangles[tIndex + 3] = vIndex;
+                        triangles[tIndex + 4] = vIndex + dy + 1;
+                        triangles[tIndex + 5] = vIndex + dy;
+
+                        tIndex += 6;
+                    }
+                    vIndex++;
+                }
+
+            Mesh mesh = new Mesh
+            {
+                vertices = vertices,
+                triangles = triangles,
+                uv = uvs
+            };
+
+            mesh.RecalculateNormals();
+
+            return mesh;
         }
     }
 }

@@ -1,10 +1,37 @@
 ﻿#pragma kernel CSEditNormal
 
-RWBuffer<float3> normal;
-Buffer<float> h;
+RWStructuredBuffer<float3> normal;
+Buffer<float> height;
 
 uint size;
+float vertexDistance;
+/*
+const int s =10;
 
+int index(int x, int y) {
+	if (x < 0)
+		x = 0;
+	if (x > size - 1)
+		x = size - 1;
+
+	if (y < 0)
+		y = 0;
+	if (y > size - 1)
+		y = size - 1;
+
+	return x * size + y;
+}
+
+float3 surfacePoint(int x, int y) {
+	float a = (float)x * vertexDistance;
+	float b = (float)y * vertexDistance;
+	return float3(a, height[index(x, y)], b);
+}
+
+float det(float3x3 m) {
+	return m._11 * m._22 * m._33 + m._21 * m._32 * m._13 + m._31 * m._12 * m._23 - m._13 * m._22 * m._31 - m._23 * m._32 * m._11 - m._33 * m._12 * m._21;
+}
+*/
 [numthreads(8,8,1)]
 void CSEditNormal(uint3 id : SV_DispatchThreadID)
 {
@@ -12,33 +39,88 @@ void CSEditNormal(uint3 id : SV_DispatchThreadID)
 		return;
 
 	int i = id.x * size + id.y;
+	/*
+	
+	//----------------
+	compute smooth normal using plane regresion
 
-	float3 n = float3(0, 0, 0);
+	We want to find plane:
 
-	if (id.x != 0) {
-		if (id.y != 0) {
-			float3 a = float3 (-1, h[i - size] - h[i - 1], 1);
-			float3 b = float3(-1, h[i - size - 1] - h[i], -1);
-			n += cross(a, b);
+		y = Ax + Bz + C
+
+	that is closet aproximation of points { (xi, yi, zi) }.
+
+	Let:
+
+		[ y1 ]			[ x1 z1 1 ]
+		[ y2 ]			[ x2 z2 1 ]
+	Y = [ y3 ] ,	X = [ x3 z3 1 ] ,
+		[ .. ]			[   ...   ]
+		[ yn ]			[ xn zn 1 ]
+
+	M' be transpose of matrix M and M^(-1) be inverse of matrix M
+
+	than
+
+		[ A ]
+		[ B ]  =  (X' * X)^(-1) * X' * Y
+		[ C ]
+
+	But it does not work properly
+	//-------------------
+
+	float x = 0, y = 0, z = 0, x2 = 0, z2 = 0, xy = 0, xz = 0, yz = 0, n = 0;
+
+	for(int xi = int(id.x) - s; xi <= int(id.x) + s; xi++)
+		for (int yi = int(id.y) - s; yi <= int(id.y) + s; yi++) {
+			float3 p = surfacePoint(xi, yi);
+			x += p.x;
+			y += p.y;
+			z += p.z;
+			x2 += p.x * p.x;
+			z2 += p.z * p.z;
+			xy += p.x * p.y;
+			xz += p.x * p.z;
+			yz += p.y * p.z;
+			n++;
 		}
-		if (id.y != size - 1) {
-			float3 a = float3(0, h[i + 1] - h[i], 1);
-			float3 b = float3(-1, h[i - size] - h[i], 0);
-			n += cross(a, b);
-		}
+	float3x3 m = { x2, xz, x, xz, z2, z, x, z, n };			// m = X' * X
+		
+	float mdet = det(m);
+	
+	if (mdet != 0) {
+		mdet = 1 / mdet;
+
+		float a = mdet * ((z2 * n) - (z * z));
+		float b = mdet * ((z * x) - (xz * n));
+		float c = mdet * ((xz * x) - (z2 * x));
+		float d = b;										//	[ a b c ]
+		float e = mdet * ((x2 * n) - (x * x));				//	[ d e f ] = m^(-1)
+		float f = mdet * ((x * xz) - (x2 * z));				//	[ g h i ]
+	  //float g = c;
+	  //float h = f;
+	  //float i = mdet * ((x2 * z2) - (xz * xz));
+
+		float A = a * xy + b * yz + c * y;
+		float B = d * xy + e * yz + f * y;
+	  //float C = g * xy + h * yz + i * y;
+		
+		float3 N = float3(-A, 1, -B);
+
+		normal[i] = float3(y, 0, 0);
 	}
-	if (id.x != size - 1) {
-		if (id.y != 0) {
-			float3 a = float3(0, h[i - 1] - h[i], -1);
-			float3 b = float3(1, h[i + size] - h[i], 0);
-			n += cross(a, b);
-		}
-		if (id.y != size - 1) {
-			float3 a = float3(1, h[i + size] - h[i + 1], -1);
-			float3 b = float3(1, h[i + size + 1] - h[i], 1);
-			n += cross(a, b);
-		}
+	else {
+		normal[i] = float3(0, 1.0f, 0);
 	}
+	*/
 
-	normal[i] = normalize(n);
+	if (id.x < size - 1 && id.y < size - 1) {
+		float3 n = float3(height[i + size] - height[i], vertexDistance, height[i + 1] - height[i]);
+		normal[i] = normalize(n);
+	}
+	else {
+
+		float3 n = float3(height[i - size] - height[i], vertexDistance, height[i - 1] - height[i]);
+		normal[i] = normalize(n);
+	}
 }

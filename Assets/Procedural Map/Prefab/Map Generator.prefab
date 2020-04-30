@@ -1,0 +1,72 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &9165960822403626366
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8527371371221934801}
+  - component: {fileID: 8338086292589692954}
+  m_Layer: 0
+  m_Name: Map Generator
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8527371371221934801
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9165960822403626366}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8338086292589692954
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9165960822403626366}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 930d01072dc0b854598cde77e1b090c3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  size: 4096
+  heightGenerator: {fileID: 11400000, guid: ec4eb7dc70c03c64da86237648755389, type: 2}
+  heatGenerator: {fileID: 11400000, guid: fec5a3e6738039746be16d02218aefd0, type: 2}
+  humidityGenerator: {fileID: 11400000, guid: c236bfd9243c22447a8030f4a6d73652, type: 2}
+  vertexDistanceToCalculateNormals: 0.002
+  heightCompute: {fileID: 7200000, guid: 35ef62057aaeb4e4e81e548d120f8455, type: 3}
+  normalCompute: {fileID: 7200000, guid: f4c23a4c243edcd4fae777568c5a5827, type: 3}
+  heatCompute: {fileID: 7200000, guid: 2707e5f348fcd9d44b61eafac711636b, type: 3}
+  humidityCompute: {fileID: 7200000, guid: 80ff724a3fcace947bc46b62d2fbe9b7, type: 3}
+  biomesCompute: {fileID: 7200000, guid: 151131db15e35194db3e52d463b50138, type: 3}
+  landTexCompute: {fileID: 7200000, guid: d3c750cc7278bfb4b96e9e030a088091, type: 3}
+  heightLevel:
+  - 0.18
+  - 0.28
+  - 0.3
+  - 0.31
+  heatLevel:
+  - 0.25
+  - 0.6
+  - 0.8
+  humidityLevel:
+  - 0.2
+  - 0.3
+  - 0.5
+  biomesSample: {fileID: 2800000, guid: f48181d8453002a41abd3901ecab8e76, type: 3}
+  waterSample: {fileID: 2800000, guid: 7afa5d4887ad3f8418fcebab2a4ce402, type: 3}
+  lightDir: {x: 2, y: 0, z: 3, w: 0.05}
